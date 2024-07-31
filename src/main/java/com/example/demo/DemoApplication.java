@@ -17,7 +17,7 @@ public class DemoApplication {
 @RestController
 class HelloController {
 
-    @GetMapping("/hello")
+    @GetMapping("/")
     public String sayHello() {
         return "Hello Render";
     }
