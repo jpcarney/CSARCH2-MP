@@ -53,6 +53,7 @@ function displayResults(result) {
         <tr><td>Miss Penalty</td><td>${result.missPenalty}</td></tr>
         <tr><td>Average Memory Access Time</td><td>${result.averageAccessTime}</td></tr>
         <tr><td>Total Memory Access Time</td><td>${result.totalAccessTime}</td></tr>
+        <tr><td>Cache Snapshot</td><td>${generateCacheSnapshot(result.cache)}</td></tr>
     `;
 
     const ctx = document.getElementById('resultsChart').getContext('2d');
@@ -67,4 +68,8 @@ function displayResults(result) {
             }]
         }
     });
+}
+
+function generateCacheSnapshot(cache) {
+    return cache.map((block, index) => `Block ${index}: ${block}`).join('<br>');
 }
