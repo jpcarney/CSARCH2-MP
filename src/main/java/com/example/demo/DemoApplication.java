@@ -11,14 +11,3 @@ public class DemoApplication {
 	}
 }
 
-@WebServlet("/simulateServlet")
-public class SimulateServlet extends HttpServlet {
- 
-    protected void doPost(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
- 
-        // code to process the form...
- 
-    }
- 
-}
