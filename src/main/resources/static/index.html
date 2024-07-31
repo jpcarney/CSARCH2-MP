@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Simulator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 60px;
+        }
+
+        .jumbotron {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 5px;
+        }
+
+        #results {
+            margin-top: 30px;
+        }
+
+        table {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Cache Simulator</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#input-form">Input Form</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#results">Results</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="jumbotron mt-4">
+            <h1>Welcome to the Cache Simulator</h1>
+            <p>Use the input form to simulate cache behavior and analyze performance metrics.</p>
+        </div>
+
+        <div id="input-form">
+            <h2>Simulation Input</h2>
+            <form id="simulationForm">
+                <div class="form-group">
+                    <label for="blockSize">Block Size (words):</label>
+                    <input type="number" class="form-control" id="blockSize" name="blockSize" required>
+                </div>
+                <div class="form-group">
+                    <label for="memorySize">Main Memory Size (words):</label>
+                    <input type="number" class="form-control" id="memorySize" name="memorySize" required>
+                </div>
+                <div class="form-group">
+                    <label for="cacheSize">Cache Memory Size (blocks):</label>
+                    <input type="number" class="form-control" id="cacheSize" name="cacheSize" required>
+                </div>
+                <div class="form-group">
+                    <label for="programFlow">Program Flow (comma-separated words):</label>
+                    <input type="text" class="form-control" id="programFlow" name="programFlow" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Simulate</button>
+            </form>
+        </div>
+
+        <div id="results">
+            <h2>Simulation Results</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <!-- Results will be populated here -->
+                </tbody>
+            </table>
+
+            <canvas id="resultsChart" width="400" height="200"></canvas>
+            <button id="exportBtn" class="btn btn-secondary">Export Results</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById('simulationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {
+                blockSize: formData.get('blockSize'),
+                memorySize: formData.get('memorySize'),
+                cacheSize: formData.get('cacheSize'),
+                programFlow: formData.get('programFlow').split(',').map(Number)
+            };
+
+            fetch('/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Simulation result:', result);
+                displayResults(result);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function displayResults(result) {
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            resultsTableBody.innerHTML = `
+                <tr><td>Cache Hits</td><td>${result.cacheHits}</td></tr>
+                <tr><td>Cache Misses</td><td>${result.cacheMisses}</td></tr>
+                <tr><td>Miss Penalty</td><td>${result.missPenalty}</td></tr>
+                <tr><td>Average Memory Access Time</td><td>${result.averageAccessTime}</td></tr>
+                <tr><td>Total Memory Access Time</td><td>${result.totalAccessTime}</td></tr>
+            `;
+
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cache Hits', 'Cache Misses'],
+                    datasets: [{
+                        label: 'Simulation Results',
+                        data: [result.cacheHits, result.cacheMisses],
+                        backgroundColor: ['#4caf50', '#f44336'],
+                    }]
+                }
+            });
+        }
+
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const resultText = `
+                Cache Hits: ${result.cacheHits}
+                Cache Misses: ${result.cacheMisses}
+                Miss Penalty: ${result.missPenalty}
+                Average Memory Access Time: ${result.averageAccessTime}
+                Total Memory Access Time: ${result.totalAccessTime}
+            `;
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'simulation_results.txt';
+            link.click();
+        });
+    </script>
+</body>
+</html>
